@@ -1,4 +1,4 @@
-define(['jquery','template','util'],function ($,template,util) {
+define(['jquery','template','util','ckeditor'],function ($,template,util,CKEDITOR) {
 	// 设置导航菜单选中
 	util.setMenu('/course/add');
 	//获取课程id
@@ -19,8 +19,31 @@ define(['jquery','template','util'],function ($,template,util) {
 			}
 			var html = template('basicTpl',data.result);
 			$('#basicInfo').html(html);
+
+			// 处理二级分类的下拉联动
+			$('#firstType').change(function(){
+				var pid = $(this).val();
+				// 根据一级分类的id查询二级分类的数据
+				$.ajax({
+					type : 'get',
+					url : '/api/category/child',
+					data : {cg_id : pid},
+					dataType : 'json',
+					success : function(data){
+						// 拼接二级分类的下拉选项
+						var tpl = ' <option value="">请选择二级分类...</option>{{each list}}<option value="{{$value.cg_id}}">{{$value.cg_name}}</option>{{/each}}'
+						var html = template.render(tpl,{list : data.result});
+						$('#secondTpl').html(html);
+					}
+				});
+			});
+			//处理富文本
+			CKEDITOR.replace('editor',{
+				toolbarGroups : [
+				{ name: 'clipboard', groups: [ 'clipboard', 'undo' ] },
+				{ name: 'editing', groups: [ 'find', 'selection', 'spellchecker		', 'editing' ] }
+			]
+			});
 		}
 	});
-
-
 })
